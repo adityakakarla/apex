@@ -1,4 +1,4 @@
-use std::fs::{self, read_dir};
+use std::fs::{self, read_dir, read_to_string};
 
 use directories::{self, ProjectDirs};
 
@@ -44,6 +44,38 @@ pub fn get_course_sections(course: String) -> Vec<String> {
             .unwrap_or_default()
     } else {
         Vec::new()
+    }
+}
+
+pub fn get_course_section_contents(course: String, section: String) -> Vec<String> {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
+        let data_dir = proj_dirs.data_dir();
+        let index_path = data_dir.join(course).join(section).join("index.json");
+        let contents = std::fs::read_to_string(index_path).unwrap_or_default();
+        let json: serde_json::Value = serde_json::from_str(&contents).unwrap_or_default();
+        json["order"]
+            .as_array()
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(String::from))
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    }
+}
+
+pub fn get_markdown(course: String, section: String, content: String) -> String {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
+        let path = proj_dirs
+            .data_dir()
+            .join(course)
+            .join(section)
+            .join(content);
+        read_to_string(path).unwrap_or_default()
+    } else {
+        String::new()
     }
 }
 
