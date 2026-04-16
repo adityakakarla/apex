@@ -79,6 +79,27 @@ pub fn get_markdown(course: String, section: String, content: String) -> String 
     }
 }
 
+pub fn get_quiz(course: String, section: String, content: String) -> Vec<(String, String)> {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
+        let path = proj_dirs
+            .data_dir()
+            .join(course)
+            .join(section)
+            .join(content);
+        let contents = read_to_string(path).unwrap_or_default();
+        let json: serde_json::Value = serde_json::from_str(&contents).unwrap_or_default();
+        if let Some(obj) = json.as_object() {
+            obj.iter()
+                .filter_map(|(k, v)| v.as_str().map(|s| (k.clone(), s.to_string())))
+                .collect()
+        } else {
+            Vec::new()
+        }
+    } else {
+        Vec::new()
+    }
+}
+
 pub fn get_claude_command() -> String {
     if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
         let data_dir = proj_dirs.data_dir();
