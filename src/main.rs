@@ -9,15 +9,15 @@ use crate::files::{
 };
 mod files;
 
-const SIDEBAR_BG: egui::Color32 = egui::Color32::from_rgb(12, 10, 9);     // stone-950
-const MAIN_BG: egui::Color32 = egui::Color32::from_rgb(28, 25, 23);       // stone-900
-const CARD_BG: egui::Color32 = egui::Color32::from_rgb(41, 37, 36);       // stone-800
-const ELEMENT_BG: egui::Color32 = egui::Color32::from_rgb(68, 64, 60);    // stone-700
-const ACCENT: egui::Color32 = egui::Color32::from_rgb(87, 83, 78);        // stone-600
-const ACCENT_MUTED: egui::Color32 = egui::Color32::from_rgb(68, 64, 60);  // stone-700
-const BORDER: egui::Color32 = egui::Color32::from_rgb(68, 64, 60);        // stone-700
-const TEXT_WEAK: egui::Color32 = egui::Color32::from_rgb(168, 162, 158);  // stone-400
-const TEXT: egui::Color32 = egui::Color32::from_rgb(231, 229, 228);       // stone-200
+const SIDEBAR_BG: egui::Color32 = egui::Color32::from_rgb(12, 10, 9); // stone-950
+const MAIN_BG: egui::Color32 = egui::Color32::from_rgb(28, 25, 23); // stone-900
+const CARD_BG: egui::Color32 = egui::Color32::from_rgb(41, 37, 36); // stone-800
+const ELEMENT_BG: egui::Color32 = egui::Color32::from_rgb(68, 64, 60); // stone-700
+const ACCENT: egui::Color32 = egui::Color32::from_rgb(87, 83, 78); // stone-600
+const ACCENT_MUTED: egui::Color32 = egui::Color32::from_rgb(68, 64, 60); // stone-700
+const BORDER: egui::Color32 = egui::Color32::from_rgb(68, 64, 60); // stone-700
+const TEXT_WEAK: egui::Color32 = egui::Color32::from_rgb(168, 162, 158); // stone-400
+const TEXT: egui::Color32 = egui::Color32::from_rgb(231, 229, 228); // stone-200
 const GREEN: egui::Color32 = egui::Color32::from_rgb(52, 211, 153);
 const RED: egui::Color32 = egui::Color32::from_rgb(248, 113, 113);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
@@ -40,10 +40,8 @@ fn main() -> eframe::Result {
             visuals.panel_fill = MAIN_BG;
             visuals.window_fill = MAIN_BG;
             visuals.extreme_bg_color = CARD_BG;
-            visuals.widgets.noninteractive.bg_stroke =
-                egui::Stroke::new(1.0, BORDER);
-            visuals.widgets.noninteractive.fg_stroke =
-                egui::Stroke::new(1.0, TEXT);
+            visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(1.0, BORDER);
+            visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, TEXT);
             visuals.selection.bg_fill = ACCENT_MUTED;
             visuals.selection.stroke = egui::Stroke::new(1.0, ACCENT);
             cc.egui_ctx.set_visuals(visuals);
@@ -122,16 +120,30 @@ impl Default for MyApp {
 fn sidebar_frame() -> egui::Frame {
     egui::Frame::new()
         .fill(SIDEBAR_BG)
-        .inner_margin(egui::Margin { left: 10, right: 10, top: 16, bottom: 16 })
+        .inner_margin(egui::Margin {
+            left: 10,
+            right: 10,
+            top: 16,
+            bottom: 16,
+        })
 }
 
 fn section_label(ui: &mut egui::Ui, text: &str) {
-    ui.label(egui::RichText::new(text).size(10.0).color(TEXT_WEAK).strong());
+    ui.label(
+        egui::RichText::new(text)
+            .size(10.0)
+            .color(TEXT_WEAK)
+            .strong(),
+    );
     ui.add_space(4.0);
 }
 
 fn nav_item(ui: &mut egui::Ui, label: &str, selected: bool, completed: bool) -> bool {
-    let fill = if selected { ACCENT_MUTED } else { egui::Color32::TRANSPARENT };
+    let fill = if selected {
+        ACCENT_MUTED
+    } else {
+        egui::Color32::TRANSPARENT
+    };
     let text_color = if selected {
         egui::Color32::WHITE
     } else if completed {
@@ -157,7 +169,11 @@ fn file_chip(ui: &mut egui::Ui, label: &str, selected: bool, completed: bool) ->
         .map(|(stem, _)| stem)
         .unwrap_or(label);
 
-    let text_color = if completed { GREEN } else { egui::Color32::WHITE };
+    let text_color = if completed {
+        GREEN
+    } else {
+        egui::Color32::WHITE
+    };
 
     let btn = egui::Button::new(egui::RichText::new(display).color(text_color).size(12.5))
         .fill(fill)
@@ -174,12 +190,7 @@ impl eframe::App for MyApp {
                 ui.centered_and_justified(|ui| {
                     ui.vertical_centered(|ui| {
                         ui.add_space(200.0);
-                        ui.label(
-                            egui::RichText::new("Apex")
-                                .size(32.0)
-                                .strong()
-                                .color(TEXT),
-                        );
+                        ui.label(egui::RichText::new("Apex").size(32.0).strong().color(TEXT));
                         ui.add_space(8.0);
                         ui.label(
                             egui::RichText::new("No data directory found.")
@@ -190,7 +201,8 @@ impl eframe::App for MyApp {
                         if ui
                             .add(
                                 egui::Button::new(
-                                    egui::RichText::new("Initialize Apex").color(egui::Color32::WHITE),
+                                    egui::RichText::new("Initialize Apex")
+                                        .color(egui::Color32::WHITE),
                                 )
                                 .fill(ACCENT)
                                 .corner_radius(8.0)
@@ -235,15 +247,23 @@ impl eframe::App for MyApp {
                     egui::Frame::new()
                         .fill(egui::Color32::from_rgb(20, 18, 17))
                         .stroke(egui::Stroke::new(1.0, BORDER))
-                        .inner_margin(egui::Margin { left: 10, right: 10, top: 16, bottom: 16 }),
+                        .inner_margin(egui::Margin {
+                            left: 10,
+                            right: 10,
+                            top: 16,
+                            bottom: 16,
+                        }),
                 )
                 .show_inside(ui, |ui| {
                     section_label(ui, "SECTIONS");
                     for section in get_course_sections(self.course.clone()) {
                         let selected = self.section == section;
-                        let contents = get_course_section_contents(self.course.clone(), section.clone());
+                        let contents =
+                            get_course_section_contents(self.course.clone(), section.clone());
                         let section_complete = !contents.is_empty()
-                            && contents.iter().all(|f| self.progress.contains(&format!("{}/{}", section, f)));
+                            && contents
+                                .iter()
+                                .all(|f| self.progress.contains(&format!("{}/{}", section, f)));
                         if nav_item(ui, &section, selected, section_complete) {
                             self.section = section.clone();
                             self.content.clear();
@@ -257,7 +277,12 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             // Header
             egui::Frame::new()
-                .inner_margin(egui::Margin { left: 20, right: 20, top: 14, bottom: 14 })
+                .inner_margin(egui::Margin {
+                    left: 20,
+                    right: 20,
+                    top: 14,
+                    bottom: 14,
+                })
                 .show(ui, |ui| {
                     ui.horizontal(|ui| {
                         let title = if !self.section.is_empty() {
@@ -267,7 +292,12 @@ impl eframe::App for MyApp {
                         } else {
                             "Apex".to_string()
                         };
-                        ui.label(egui::RichText::new(title).size(16.0).strong().color(egui::Color32::WHITE));
+                        ui.label(
+                            egui::RichText::new(title)
+                                .size(16.0)
+                                .strong()
+                                .color(egui::Color32::WHITE),
+                        );
 
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             let just_copied = self
@@ -275,13 +305,23 @@ impl eframe::App for MyApp {
                                 .map(|t| t.elapsed().as_secs_f32() < 2.0)
                                 .unwrap_or(false);
 
-                            let label = if just_copied { "Copied!" } else { "Copy Command" };
-                            let fill = if just_copied { egui::Color32::from_rgb(22, 101, 70) } else { ELEMENT_BG };
+                            let label = if just_copied {
+                                "Copied!"
+                            } else {
+                                "Copy Command"
+                            };
+                            let fill = if just_copied {
+                                egui::Color32::from_rgb(22, 101, 70)
+                            } else {
+                                ELEMENT_BG
+                            };
 
                             if ui
                                 .add(
                                     egui::Button::new(
-                                        egui::RichText::new(label).size(12.0).color(egui::Color32::WHITE),
+                                        egui::RichText::new(label)
+                                            .size(12.0)
+                                            .color(egui::Color32::WHITE),
                                     )
                                     .fill(fill)
                                     .corner_radius(6.0),
@@ -307,7 +347,12 @@ impl eframe::App for MyApp {
                     get_course_section_contents(self.course.clone(), self.section.clone());
                 if !contents.is_empty() {
                     egui::Frame::new()
-                        .inner_margin(egui::Margin { left: 20, right: 20, top: 10, bottom: 10 })
+                        .inner_margin(egui::Margin {
+                            left: 20,
+                            right: 20,
+                            top: 10,
+                            bottom: 10,
+                        })
                         .show(ui, |ui| {
                             ui.horizontal_wrapped(|ui| {
                                 for content in &contents {
@@ -340,14 +385,22 @@ impl eframe::App for MyApp {
 
             if has_content && self.content.ends_with(".md") {
                 let mut cache = CommonMarkCache::default();
-                let markdown =
-                    get_markdown(self.course.clone(), self.section.clone(), self.content.clone());
+                let markdown = get_markdown(
+                    self.course.clone(),
+                    self.section.clone(),
+                    self.content.clone(),
+                );
                 let key = format!("{}/{}", self.section, self.content);
                 let is_complete = self.progress.contains(&key);
 
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     egui::Frame::new()
-                        .inner_margin(egui::Margin { left: 32, right: 32, top: 20, bottom: 20 })
+                        .inner_margin(egui::Margin {
+                            left: 32,
+                            right: 32,
+                            top: 20,
+                            bottom: 20,
+                        })
                         .show(ui, |ui| {
                             CommonMarkViewer::new().show(ui, &mut cache, markdown.as_str());
                             ui.add_space(16.0);
@@ -395,7 +448,12 @@ impl eframe::App for MyApp {
 
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     egui::Frame::new()
-                        .inner_margin(egui::Margin { left: 32, right: 32, top: 20, bottom: 20 })
+                        .inner_margin(egui::Margin {
+                            left: 32,
+                            right: 32,
+                            top: 20,
+                            bottom: 20,
+                        })
                         .show(ui, |ui| {
                             show_quiz(ui, &mut self.quiz);
                         });
@@ -465,14 +523,23 @@ fn show_quiz(ui: &mut egui::Ui, quiz_opt: &mut Option<QuizState>) {
         .inner_margin(egui::Margin::same(20))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
-            ui.label(egui::RichText::new(&question).size(18.0).strong().color(TEXT));
+            ui.label(
+                egui::RichText::new(&question)
+                    .size(18.0)
+                    .strong()
+                    .color(TEXT),
+            );
         });
 
     ui.add_space(16.0);
 
     match quiz.step {
         QuizStep::Answering => {
-            ui.label(egui::RichText::new("Your answer").size(12.0).color(TEXT_WEAK));
+            ui.label(
+                egui::RichText::new("Your answer")
+                    .size(12.0)
+                    .color(TEXT_WEAK),
+            );
             ui.add_space(4.0);
 
             let resp = ui.add(
@@ -517,22 +584,32 @@ fn show_quiz(ui: &mut egui::Ui, quiz_opt: &mut Option<QuizState>) {
                 .inner_margin(egui::Margin::same(16))
                 .show(ui, |ui| {
                     ui.set_min_width(ui.available_width());
-                    ui.label(egui::RichText::new("Correct answer").size(11.0).color(GREEN));
+                    ui.label(
+                        egui::RichText::new("Correct answer")
+                            .size(11.0)
+                            .color(GREEN),
+                    );
                     ui.add_space(4.0);
                     ui.label(egui::RichText::new(&answer).size(16.0).strong().color(TEXT));
                 });
 
             ui.add_space(16.0);
-            ui.label(egui::RichText::new("Did you get it right?").size(13.0).color(TEXT_WEAK));
+            ui.label(
+                egui::RichText::new("Did you get it right?")
+                    .size(13.0)
+                    .color(TEXT_WEAK),
+            );
             ui.add_space(8.0);
 
             ui.horizontal(|ui| {
                 if ui
                     .add(
-                        egui::Button::new(egui::RichText::new("Got it").color(egui::Color32::WHITE))
-                            .fill(egui::Color32::from_rgb(22, 101, 70))
-                            .corner_radius(8.0)
-                            .min_size(egui::vec2(100.0, 34.0)),
+                        egui::Button::new(
+                            egui::RichText::new("Got it").color(egui::Color32::WHITE),
+                        )
+                        .fill(egui::Color32::from_rgb(22, 101, 70))
+                        .corner_radius(8.0)
+                        .min_size(egui::vec2(100.0, 34.0)),
                     )
                     .clicked()
                 {
@@ -575,7 +652,13 @@ fn show_results(ui: &mut egui::Ui, quiz: &mut QuizState) {
     let score = quiz.score();
     let pct = score as f32 / total as f32;
 
-    let score_color = if pct >= 0.8 { GREEN } else if pct >= 0.5 { AMBER } else { RED };
+    let score_color = if pct >= 0.8 {
+        GREEN
+    } else if pct >= 0.5 {
+        AMBER
+    } else {
+        RED
+    };
 
     egui::Frame::new()
         .fill(CARD_BG)
@@ -585,7 +668,12 @@ fn show_results(ui: &mut egui::Ui, quiz: &mut QuizState) {
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             ui.vertical_centered(|ui| {
-                ui.label(egui::RichText::new("Quiz Complete").size(22.0).strong().color(TEXT));
+                ui.label(
+                    egui::RichText::new("Quiz Complete")
+                        .size(22.0)
+                        .strong()
+                        .color(TEXT),
+                );
                 ui.add_space(16.0);
                 ui.label(
                     egui::RichText::new(format!("{} / {}", score, total))
@@ -625,7 +713,12 @@ fn show_results(ui: &mut egui::Ui, quiz: &mut QuizState) {
         });
 
     ui.add_space(24.0);
-    ui.label(egui::RichText::new("Review").size(14.0).strong().color(TEXT));
+    ui.label(
+        egui::RichText::new("Review")
+            .size(14.0)
+            .strong()
+            .color(TEXT),
+    );
     ui.add_space(8.0);
 
     for (i, (q, a)) in quiz.questions.iter().enumerate() {
@@ -650,7 +743,12 @@ fn show_results(ui: &mut egui::Ui, quiz: &mut QuizState) {
             .fill(bg)
             .stroke(egui::Stroke::new(1.0, border))
             .corner_radius(8.0)
-            .inner_margin(egui::Margin { left: 14, right: 14, top: 10, bottom: 10 })
+            .inner_margin(egui::Margin {
+                left: 14,
+                right: 14,
+                top: 10,
+                bottom: 10,
+            })
             .show(ui, |ui| {
                 ui.set_min_width(ui.available_width());
                 ui.horizontal(|ui| {

@@ -19,9 +19,15 @@ Apex is a desktop learning platform inspired by Karpathy's knowledge base concep
 
 ### Getting Started
 
-**Option 1: Download
+**Option 1: Download**
 
 Download `apex.zip`, unzip it, and run the `apex` executable inside.
+
+On MacOS, I tried moving this to the Applications folder and opening it, which failed. To resolve, run this command:
+
+```bash
+xattr -cr /Applications/apex.app
+```
 
 **Option 2: Build from source**
 
