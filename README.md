@@ -21,9 +21,9 @@ Apex is a desktop learning platform inspired by Karpathy's knowledge base concep
 
 **Option 1: Download**
 
-Download `apex.zip`, unzip it, and run the `apex` executable inside.
+Download `apex.dmg`, open it, and drag `apex.app` to your Applications folder.
 
-On MacOS, I tried moving this to the Applications folder and opening it, which failed. To resolve, run this command:
+On macOS, if the app is blocked from opening, run:
 
 ```bash
 xattr -cr /Applications/apex.app
