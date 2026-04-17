@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs::{self, read_dir, read_to_string};
 
 use directories::{self, ProjectDirs};
@@ -109,6 +110,30 @@ pub fn get_claude_command() -> String {
     }
 }
 
+pub fn load_progress(course: &str) -> HashSet<String> {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
+        let path = proj_dirs.data_dir().join(course).join("progress.json");
+        let contents = read_to_string(path).unwrap_or_default();
+        let json: serde_json::Value = serde_json::from_str(&contents).unwrap_or_default();
+        json.as_array()
+            .map(|arr| arr.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+            .unwrap_or_default()
+    } else {
+        HashSet::new()
+    }
+}
+
+pub fn save_progress(course: &str, progress: &HashSet<String>) {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
+        let path = proj_dirs.data_dir().join(course).join("progress.json");
+        let mut keys: Vec<&String> = progress.iter().collect();
+        keys.sort();
+        if let Ok(json) = serde_json::to_string_pretty(&keys) {
+            let _ = fs::write(path, json);
+        }
+    }
+}
+
 pub fn initialize_directory() -> bool {
     if let Some(proj_dirs) = ProjectDirs::from("com", "Apex", "Apex") {
         let data_dir = proj_dirs.data_dir();
@@ -129,7 +154,7 @@ json files (corresponding to questions and answers for quizzes).
 
 Markdown must follow commonmark guidelines. Be concise, but powerful. Humans
 must enjoy reading it, and it should not feel like a waste of time. Use
-cutting-edge teaching principles.
+cutting-edge teaching principles. Avoid using HTML.
 
 The JSON files should look like:
 {'what is 2 + 2': '4', 'what is 3 + 3': '6'}, but using double quotes instead
@@ -143,6 +168,10 @@ index.json (for both course and course section directories) should look like:
 {
  'order': ['x.md', 'y.json', 'z.md']
 }
+
+Each course directory may also contain a progress.json file. This is managed
+automatically by the app to track which files the user has completed. Do not
+create or edit this file manually.
 ",
         )
         .is_ok()

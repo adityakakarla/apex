@@ -1,21 +1,23 @@
 use eframe::egui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 
+use std::collections::HashSet;
+
 use crate::files::{
     get_claude_command, get_course_section_contents, get_course_sections, get_courses,
-    get_markdown, get_quiz, initialize_directory, is_initialized,
+    get_markdown, get_quiz, initialize_directory, is_initialized, load_progress, save_progress,
 };
 mod files;
 
-const SIDEBAR_BG: egui::Color32 = egui::Color32::from_rgb(13, 13, 18);
-const MAIN_BG: egui::Color32 = egui::Color32::from_rgb(18, 18, 26);
-const CARD_BG: egui::Color32 = egui::Color32::from_rgb(24, 24, 34);
-const ELEMENT_BG: egui::Color32 = egui::Color32::from_rgb(48, 48, 68);
-const ACCENT: egui::Color32 = egui::Color32::from_rgb(99, 102, 241);
-const ACCENT_MUTED: egui::Color32 = egui::Color32::from_rgb(30, 32, 68);
-const BORDER: egui::Color32 = egui::Color32::from_rgb(38, 38, 52);
-const TEXT_WEAK: egui::Color32 = egui::Color32::from_rgb(160, 160, 185);
-const TEXT: egui::Color32 = egui::Color32::from_rgb(220, 220, 235);
+const SIDEBAR_BG: egui::Color32 = egui::Color32::from_rgb(12, 10, 9);     // stone-950
+const MAIN_BG: egui::Color32 = egui::Color32::from_rgb(28, 25, 23);       // stone-900
+const CARD_BG: egui::Color32 = egui::Color32::from_rgb(41, 37, 36);       // stone-800
+const ELEMENT_BG: egui::Color32 = egui::Color32::from_rgb(68, 64, 60);    // stone-700
+const ACCENT: egui::Color32 = egui::Color32::from_rgb(87, 83, 78);        // stone-600
+const ACCENT_MUTED: egui::Color32 = egui::Color32::from_rgb(68, 64, 60);  // stone-700
+const BORDER: egui::Color32 = egui::Color32::from_rgb(68, 64, 60);        // stone-700
+const TEXT_WEAK: egui::Color32 = egui::Color32::from_rgb(168, 162, 158);  // stone-400
+const TEXT: egui::Color32 = egui::Color32::from_rgb(231, 229, 228);       // stone-200
 const GREEN: egui::Color32 = egui::Color32::from_rgb(52, 211, 153);
 const RED: egui::Color32 = egui::Color32::from_rgb(248, 113, 113);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
@@ -70,6 +72,7 @@ struct QuizState {
     user_answer: String,
     step: QuizStep,
     correct: Vec<bool>,
+    completion_saved: bool,
 }
 
 impl QuizState {
@@ -81,6 +84,7 @@ impl QuizState {
             user_answer: String::new(),
             step: QuizStep::Answering,
             correct: vec![false; len],
+            completion_saved: false,
         }
     }
 
@@ -99,6 +103,7 @@ struct MyApp {
     content: String,
     quiz: Option<QuizState>,
     copied_at: Option<std::time::Instant>,
+    progress: HashSet<String>,
 }
 
 impl Default for MyApp {
@@ -109,6 +114,7 @@ impl Default for MyApp {
             content: String::new(),
             quiz: None,
             copied_at: None,
+            progress: HashSet::new(),
         }
     }
 }
@@ -124,9 +130,15 @@ fn section_label(ui: &mut egui::Ui, text: &str) {
     ui.add_space(4.0);
 }
 
-fn nav_item(ui: &mut egui::Ui, label: &str, selected: bool) -> bool {
+fn nav_item(ui: &mut egui::Ui, label: &str, selected: bool, completed: bool) -> bool {
     let fill = if selected { ACCENT_MUTED } else { egui::Color32::TRANSPARENT };
-    let text_color = if selected { ACCENT } else { TEXT };
+    let text_color = if selected {
+        egui::Color32::WHITE
+    } else if completed {
+        GREEN
+    } else {
+        TEXT
+    };
 
     let btn = egui::Button::new(egui::RichText::new(label).color(text_color).size(13.5))
         .fill(fill)
@@ -137,14 +149,15 @@ fn nav_item(ui: &mut egui::Ui, label: &str, selected: bool) -> bool {
     ui.add(btn).clicked()
 }
 
-fn file_chip(ui: &mut egui::Ui, label: &str, selected: bool) -> bool {
+fn file_chip(ui: &mut egui::Ui, label: &str, selected: bool, completed: bool) -> bool {
     let fill = if selected { ACCENT } else { ELEMENT_BG };
-    let text_color = if selected { egui::Color32::WHITE } else { egui::Color32::WHITE };
 
     let display = label
         .rsplit_once('.')
         .map(|(stem, _)| stem)
         .unwrap_or(label);
+
+    let text_color = if completed { GREEN } else { egui::Color32::WHITE };
 
     let btn = egui::Button::new(egui::RichText::new(display).color(text_color).size(12.5))
         .fill(fill)
@@ -203,11 +216,12 @@ impl eframe::App for MyApp {
 
                 for course in get_courses() {
                     let selected = self.course == course;
-                    if nav_item(ui, &course, selected) {
+                    if nav_item(ui, &course, selected, false) {
                         self.course = course.clone();
                         self.section.clear();
                         self.content.clear();
                         self.quiz = None;
+                        self.progress = load_progress(&course);
                     }
                 }
             });
@@ -219,7 +233,7 @@ impl eframe::App for MyApp {
                 .resizable(false)
                 .frame(
                     egui::Frame::new()
-                        .fill(egui::Color32::from_rgb(16, 16, 22))
+                        .fill(egui::Color32::from_rgb(20, 18, 17))
                         .stroke(egui::Stroke::new(1.0, BORDER))
                         .inner_margin(egui::Margin { left: 10, right: 10, top: 16, bottom: 16 }),
                 )
@@ -227,7 +241,10 @@ impl eframe::App for MyApp {
                     section_label(ui, "SECTIONS");
                     for section in get_course_sections(self.course.clone()) {
                         let selected = self.section == section;
-                        if nav_item(ui, &section, selected) {
+                        let contents = get_course_section_contents(self.course.clone(), section.clone());
+                        let section_complete = !contents.is_empty()
+                            && contents.iter().all(|f| self.progress.contains(&format!("{}/{}", section, f)));
+                        if nav_item(ui, &section, selected, section_complete) {
                             self.section = section.clone();
                             self.content.clear();
                             self.quiz = None;
@@ -295,7 +312,9 @@ impl eframe::App for MyApp {
                             ui.horizontal_wrapped(|ui| {
                                 for content in &contents {
                                     let selected = *content == self.content;
-                                    if file_chip(ui, content, selected) {
+                                    let key = format!("{}/{}", self.section, content);
+                                    let completed = self.progress.contains(&key);
+                                    if file_chip(ui, content, selected, completed) {
                                         self.content = content.clone();
                                         if content.ends_with(".json") {
                                             let questions = get_quiz(
@@ -323,21 +342,61 @@ impl eframe::App for MyApp {
                 let mut cache = CommonMarkCache::default();
                 let markdown =
                     get_markdown(self.course.clone(), self.section.clone(), self.content.clone());
+                let key = format!("{}/{}", self.section, self.content);
+                let is_complete = self.progress.contains(&key);
 
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     egui::Frame::new()
                         .inner_margin(egui::Margin { left: 32, right: 32, top: 20, bottom: 20 })
                         .show(ui, |ui| {
-                            ui.set_max_width(740.0);
                             CommonMarkViewer::new().show(ui, &mut cache, markdown.as_str());
+                            ui.add_space(16.0);
+                            ui.separator();
+                            ui.add_space(12.0);
+                            let (label, fill) = if is_complete {
+                                ("Completed", egui::Color32::from_rgb(22, 101, 70))
+                            } else {
+                                ("Mark Complete", ACCENT)
+                            };
+                            if ui
+                                .add(
+                                    egui::Button::new(
+                                        egui::RichText::new(label).color(egui::Color32::WHITE),
+                                    )
+                                    .fill(fill)
+                                    .corner_radius(8.0)
+                                    .min_size(egui::vec2(140.0, 34.0)),
+                                )
+                                .clicked()
+                            {
+                                if is_complete {
+                                    self.progress.remove(&key);
+                                } else {
+                                    self.progress.insert(key);
+                                }
+                                save_progress(&self.course, &self.progress);
+                            }
                         });
                 });
             } else if has_content && self.content.ends_with(".json") {
+                // Auto-mark quiz complete when Results screen is reached
+                if let Some(quiz) = &self.quiz {
+                    if quiz.step == QuizStep::Results && !quiz.completion_saved {
+                        let key = format!("{}/{}", self.section, self.content);
+                        self.progress.insert(key);
+                        save_progress(&self.course, &self.progress);
+                    }
+                }
+                if let Some(quiz) = &mut self.quiz {
+                    if quiz.step == QuizStep::Results {
+                        quiz.completion_saved = true;
+                    }
+                }
+
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     egui::Frame::new()
                         .inner_margin(egui::Margin { left: 32, right: 32, top: 20, bottom: 20 })
                         .show(ui, |ui| {
-                            ui.set_max_width(680.0);
                             show_quiz(ui, &mut self.quiz);
                         });
                 });
@@ -388,7 +447,7 @@ fn show_quiz(ui: &mut egui::Ui, quiz_opt: &mut Option<QuizState>) {
     ui.add(
         egui::ProgressBar::new(progress)
             .desired_height(4.0)
-            .fill(ACCENT),
+            .fill(TEXT_WEAK),
     );
     ui.add_space(20.0);
 
