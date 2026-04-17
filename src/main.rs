@@ -1,5 +1,6 @@
 use eframe::egui;
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
+use std::sync::Arc;
 
 use std::collections::HashSet;
 
@@ -23,12 +24,15 @@ const RED: egui::Color32 = egui::Color32::from_rgb(248, 113, 113);
 const AMBER: egui::Color32 = egui::Color32::from_rgb(251, 191, 36);
 
 fn main() -> eframe::Result {
-    let options = eframe::NativeOptions {
+    let d = eframe::icon_data::from_png_bytes(include_bytes!("../assets/icon.png"))
+        .expect("The icon data must be valid");
+    let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1100.0, 720.0])
             .with_min_inner_size([640.0, 480.0]),
         ..Default::default()
     };
+    options.viewport.icon = Some(Arc::new(d));
     eframe::run_native(
         "Apex",
         options,
