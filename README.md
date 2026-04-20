@@ -2,6 +2,8 @@
 
 Apex is a desktop learning platform inspired by Karpathy's knowledge base concept. It lets you organize courses into structured sections, read markdown lessons, and take interactive quizzes — all while tracking your progress.
 
+NOTE: Updated version can be found [here](https://github.com/adityakakarla/apex-v2)
+
 ### Features
 
 - **Course browser** — hierarchical navigation across courses, sections, and content files
