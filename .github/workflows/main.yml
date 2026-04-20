@@ -1,0 +1,17 @@
+# .github/workflows/release.yml
+   name: Release
+   on:
+     push:
+       tags: ['v*']
+   jobs:
+     build:
+       runs-on: macos-latest
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-node@v4
+         - run: npm install -g pnpm
+         - run: pnpm install
+         - run: pnpm tauri build --bundles app,dmg
+         - uses: softprops/action-gh-release@v2
+           with:
+             files: src-tauri/target/release/bundle/dmg/*.dmg
